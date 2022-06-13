@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+aiofiles
+fastapi_chameleon
+python-dotenv
+sqlalchemy
+sqlmodel
+asyncpg
+httpx
+psycopg2
+gunicorn
+python-multipart
+# dev
+pytest
+requests
+pandas
+openpyxl
