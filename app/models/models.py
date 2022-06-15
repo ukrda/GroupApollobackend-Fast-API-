@@ -63,7 +63,7 @@ class Stream(SQLModel, table=True):
     s_title: str
     s_media_path: Optional[str] = None
     s_created_timestamp: datetime.datetime = Field(default=datetime.datetime.utcnow())
-    s_deleted_timestamp: datetime.datetime = Field(default=datetime.datetime.utcnow())
+    s_deleted_timestamp: datetime.datetime = Field(default=None)
 
     gm_id: Optional[int] = Field(default=None, foreign_key="groupmember.gm_id")
 

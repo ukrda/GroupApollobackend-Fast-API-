@@ -53,6 +53,14 @@ def start_group(user_name: str, GroupModel: GroupModel, session: Session = Depen
     if query_user is None:
         return {'Status': 'Success', 'Response': 'Sign Up First'}
     
+    # Check whether Group is existance or not
+    query = select(Group).where(
+        Group.g_name == GroupModel.g_name
+    )
+    query_group = session.exec(query).first()
+    if query_group is not None:
+        return {'Status': 'Success', 'Response': 'Group Name is already existed'}
+
     # Create a Group
     try:
         new_group = Group(
