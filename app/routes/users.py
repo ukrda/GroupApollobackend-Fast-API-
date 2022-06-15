@@ -3,15 +3,16 @@ import fastapi
 import uuid
 import hashlib
 from dotenv import load_dotenv
-from app.database import db
-from app.database.db import get_session
-from sqlmodel import Field, Relationship, Session, select, SQLModel
-from app.models import models
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPBearer, HTTPBasicCredentials
+from pydantic import BaseModel
+
+from app.database import db
+from app.database.db import get_session
+from sqlmodel import Session, select
+from app.models import models
 from app.security import bearer
 
-from pydantic import BaseModel
 
 load_dotenv()
 salt = os.environ["Foreign_key_salt"]
@@ -20,12 +21,12 @@ router = fastapi.APIRouter()
 
 engine = db.get_engine()
 
-USER = models.User
+User = models.User
 
 class UserModel(BaseModel):
-    user_name: str
-    user_password: str
-    user_email: str
+    u_name: str
+    u_password: str
+    u_email: str
     
 @router.get('/sign_in',
     dependencies=[Depends(bearer.has_access)],
@@ -33,10 +34,10 @@ class UserModel(BaseModel):
     include_in_schema=True,
     description="Sign in a user",
 )
-def sign_in_user(user_name: str, user_password: str, user_email: str, session: Session = Depends(get_session)):
-    query = select(USER).where(
-        USER.u_name == user_name,
-        USER.u_password == user_password
+def sign_in_user(u_name: str, u_password: str, u_email: str, session: Session = Depends(get_session)):
+    query = select(User).where(
+        User.u_name == u_name,
+        User.u_password == u_password
     )
     query_result = session.exec(query).first()
 
@@ -53,18 +54,18 @@ def sign_in_user(user_name: str, user_password: str, user_email: str, session: S
     description="Sign up a user",
 )
 def sign_up_user(UserModel: UserModel, session: Session= Depends(get_session)):
-    query = select(USER).where(
-        USER.u_name == UserModel.user_name
+    query = select(User).where(
+        User.u_name == UserModel.u_name
     )
     query_result = session.exec(query).first()
     if query_result is not None:
         return {'Status': 'Success', 'Response': 'Already Exists'}
 
     try:
-        new_user = USER(
-            u_name = UserModel.user_name,
-            u_password = UserModel.user_password,
-            u_email = UserModel.user_email
+        new_user = User(
+            u_name = UserModel.u_name,
+            u_password = UserModel.u_password,
+            u_email = UserModel.u_email
         )
         session.add(new_user)
         session.commit()

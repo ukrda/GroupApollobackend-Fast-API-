@@ -44,7 +44,7 @@ class Group(SQLModel, table=True):
     g_allow_gender: str
     g_limit_member: int
     g_invite_option: int
-    g_non_member: Optional[bool] = false
+    g_non_member: Optional[bool] = False
     g_status: Optional[bool] = True # True - Group active, False - inactive
     g_created_timestamp: datetime.datetime = Field(default=datetime.datetime.utcnow())
     g_deleted_timestamp: datetime.datetime = Field(default=None)
