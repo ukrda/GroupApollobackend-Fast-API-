@@ -6,6 +6,8 @@ from app.database import db
 from app.routes import users
 from app.routes.group import group
 from app.routes.stream import stream
+from app.routes.join import invite, join
+
 
 # from app.routes.internal import add_data, setup, text
 # from app.routes.test import question
@@ -17,6 +19,9 @@ app = FastAPI()
 app.include_router(users.router)
 app.include_router(group.router)
 app.include_router(stream.router)
+app.include_router(invite.router)
+app.include_router(join.router)
+
 
 # app.include_router(text.router)
 # app.include_router(add_data.router)

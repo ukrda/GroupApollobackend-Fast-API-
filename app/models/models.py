@@ -76,7 +76,7 @@ class Join(SQLModel, table=True):
     j_id: Optional[int] = Field(default=None, primary_key=True)
 
     u_id: int # User to Ask to join the group
-    gm_id: Optional[int] = Field(default=None, foreign_key="groupmember.gm_id")
+    gm_id: Optional[int] = Field(default=None, foreign_key="groupmember.gm_id") # group manager
     join_request_timestamp: datetime.datetime = Field(default=datetime.datetime.utcnow())
     join_status: Optional[int] = 1 # 1- pending, 2- accepted, 3- declined
     join_response_timestamp: datetime.datetime = Field(default=None)
@@ -93,7 +93,7 @@ class InvitationLog(SQLModel, table=True):
     i_log_timestamp: datetime.datetime = Field(default=datetime.datetime.utcnow())
     i_response_timestamp: datetime.datetime = Field(default=None)
 
-    gm_id: Optional[int] = Field(default=None, foreign_key="groupmember.gm_id")
+    gm_id: Optional[int] = Field(default=None, foreign_key="groupmember.gm_id") # group manager
 
 class Friendship(SQLModel, table=True):
     """
