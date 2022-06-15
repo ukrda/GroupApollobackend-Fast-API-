@@ -15,7 +15,7 @@ class User(SQLModel, table=True):
     u_email: str
     u_password: str
     u_created_timestamp: datetime.datetime = Field(default=datetime.datetime.utcnow())
-    u_removed_timestamp: datetime.datetime = Field(default=datetime.datetime.utcnow())
+    u_removed_timestamp: datetime.datetime = Field(default=None)
 
 class GroupMember(SQLModel, table=True):
     """
