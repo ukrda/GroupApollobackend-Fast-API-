@@ -30,7 +30,7 @@ class StreamModel(BaseModel):
     dependencies=[Depends(bearer.has_access)],
     tags=["Stream"],
     include_in_schema=True,
-    description="Start your stream",
+    description="Post your stream",
 )
 def start_stream(group_name: str, user_name: str, StreamModel: StreamModel, session: Session = Depends(get_session)):
     # Get GroupMember ID and Group ID & User ID
@@ -70,3 +70,44 @@ def start_stream(group_name: str, user_name: str, StreamModel: StreamModel, sess
         return {'Status': 'Success', 'Response': new_stream.s_id}
     except:
         return {'Status': 'Fail', 'Response': 'Failed to Create a Stream'}
+
+@router.get('/show_stream/{user_name}',
+    dependencies=[Depends(bearer.has_access)],
+    tags=["Stream"],
+    include_in_schema=True,
+    description="Show your stream",
+)
+def show_stream(user_name: str, session: Session = Depends(get_session)):
+    # Get User ID
+    query = select(User).where(
+        User.u_name == user_name
+    )
+    query_user = session.exec(query).first()
+
+    # Get Group Member
+    query = select(GroupMember).where(
+        GroupMember.u_id == query_user.u_id
+    )
+    query_group_member = session.exec(query)
+    streams = []
+    for group_member in query_group_member:
+        stream_info = {}
+        
+        query = select(Group).where(
+            Group.g_id == group_member.g_id
+        )
+        query_group = session.exec(query).first()
+
+        query = select(Stream).where(
+            Stream.gm_id == group_member.gm_id
+        )
+        query_stream = session.exec(query).first()
+
+        stream_info['group_name'] = query_group.g_name
+        stream_info['stream_title'] = query_stream.s_title
+        stream_info['stream_content_type'] = query_stream.s_content_type
+        stream_info['s_media_path'] = query_stream.s_media_path
+
+        streams.append(stream_info)
+    
+    return {'Status': 'Success', 'Response': streams}
