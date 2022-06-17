@@ -1,13 +1,13 @@
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from app.database import db
 from app.routes import users
 from app.routes.group import group
 from app.routes.stream import stream
 from app.routes.join import invite, join
-
 
 # from app.routes.internal import add_data, setup, text
 # from app.routes.test import question
@@ -22,6 +22,7 @@ app.include_router(stream.router)
 app.include_router(invite.router)
 app.include_router(join.router)
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # app.include_router(text.router)
 # app.include_router(add_data.router)

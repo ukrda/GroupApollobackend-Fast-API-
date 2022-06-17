@@ -1,16 +1,22 @@
 import os
 import fastapi
-from fastapi import Depends
+from fastapi import Depends, UploadFile, File
 from dotenv import load_dotenv
 from sqlmodel import Session, select
 from pydantic import BaseModel
+import aiofiles
+
+from datetime import datetime
 
 from app.database.db import get_session, get_engine
 from app.models import models
 from app.security import bearer
 
+
+
 load_dotenv()
 salt = os.environ["Foreign_key_salt"]
+static_directory = os.environ['Static_file']
 
 router = fastapi.APIRouter()
 
@@ -32,7 +38,7 @@ class StreamModel(BaseModel):
     include_in_schema=True,
     description="Post your stream",
 )
-def start_stream(group_name: str, user_name: str, StreamModel: StreamModel, session: Session = Depends(get_session)):
+async def start_stream(group_name: str, user_name: str, StreamModel: StreamModel,  upload_stream: UploadFile=File(), session: Session = Depends(get_session)):
     # Get GroupMember ID and Group ID & User ID
     query = select(Group).where(
         Group.g_name == group_name
@@ -57,19 +63,26 @@ def start_stream(group_name: str, user_name: str, StreamModel: StreamModel, sess
         return {'Status': 'Success', 'Response': 'User is not a member of this group'}
 
     # Create a Stream
-    try:
-        new_stream = Stream(
-            s_content_type = StreamModel.s_content_type,
-            s_title = StreamModel.s_title,
-            s_media_path = StreamModel.s_media_path,
-            gm_id = query_group_member.gm_id
-        )
-        session.add(new_stream)
-        session.commit()
+    # try:
+    upload_file_path = os.path.join('static/', upload_stream.filename)
+    async with aiofiles.open(upload_file_path, 'wb') as out_file:
+        content = await upload_stream.read(1024)
+        while content:  # async read chunk
+            await out_file.write(content)  # async write chunk
+            content = await upload_stream.read(1024)
+    
+    new_stream = Stream(
+        s_content_type = StreamModel.s_content_type,
+        s_title = StreamModel.s_title,
+        s_media_path = upload_file_path,
+        gm_id = query_group_member.gm_id
+    )
+    session.add(new_stream)
+    session.commit()
 
-        return {'Status': 'Success', 'Response': new_stream.s_id}
-    except:
-        return {'Status': 'Fail', 'Response': 'Failed to Create a Stream'}
+    return {'Status': 'Success', 'Response': new_stream.s_id}
+    # except:
+    #     return {'Status': 'Fail', 'Response': 'Failed to Create a Stream'}
 
 @router.get('/show_stream/{user_name}',
     dependencies=[Depends(bearer.has_access)],

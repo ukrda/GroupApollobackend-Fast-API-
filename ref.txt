@@ -1,0 +1,17 @@
+///// FastAPI Documentation
+- Tutorial
+https://fastapi.tiangolo.com/tutorial/
+- DB
+https://sqlmodel.tiangolo.com/tutorial/
+- Static Files
+https://fastapi.tiangolo.com/tutorial/static-files/
+https://www.starlette.io/staticfiles/
+
+
+///// File Upload on fastapi
+https://stackoverflow.com/questions/71052617/how-do-i-save-a-fastapi-uploadfile-which-is-a-zip-file-to-disk-as-zip
+https://stackoverflow.com/questions/63580229/how-to-save-uploadfile-in-fastapi
+
+- Download
+https://stackoverflow.com/questions/55873174/how-do-i-return-an-image-in-fastapi
+https://stackoverflow.com/questions/60716529/download-file-using-fastapi
