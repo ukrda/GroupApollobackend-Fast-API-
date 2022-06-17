@@ -38,7 +38,7 @@ class StreamModel(BaseModel):
     include_in_schema=True,
     description="Post your stream",
 )
-async def start_stream(group_name: str, user_name: str, StreamModel: StreamModel,  upload_stream: UploadFile=File(), session: Session = Depends(get_session)):
+def start_stream(group_name: str, user_name: str, StreamModel: StreamModel, session: Session = Depends(get_session)):
     # Get GroupMember ID and Group ID & User ID
     query = select(Group).where(
         Group.g_name == group_name
@@ -63,26 +63,19 @@ async def start_stream(group_name: str, user_name: str, StreamModel: StreamModel
         return {'Status': 'Success', 'Response': 'User is not a member of this group'}
 
     # Create a Stream
-    # try:
-    upload_file_path = os.path.join('static/', upload_stream.filename)
-    async with aiofiles.open(upload_file_path, 'wb') as out_file:
-        content = await upload_stream.read(1024)
-        while content:  # async read chunk
-            await out_file.write(content)  # async write chunk
-            content = await upload_stream.read(1024)
-    
-    new_stream = Stream(
-        s_content_type = StreamModel.s_content_type,
-        s_title = StreamModel.s_title,
-        s_media_path = upload_file_path,
-        gm_id = query_group_member.gm_id
-    )
-    session.add(new_stream)
-    session.commit()
+    try:
+        new_stream = Stream(
+            s_content_type = StreamModel.s_content_type,
+            s_title = StreamModel.s_title,
+            s_media_path = StreamModel.s_media_path,
+            gm_id = query_group_member.gm_id
+        )
+        session.add(new_stream)
+        session.commit()
 
-    return {'Status': 'Success', 'Response': new_stream.s_id}
-    # except:
-    #     return {'Status': 'Fail', 'Response': 'Failed to Create a Stream'}
+        return {'Status': 'Success', 'Response': new_stream.s_id}
+    except:
+        return {'Status': 'Fail', 'Response': 'Failed to Create a Stream'}
 
 @router.get('/show_stream/{user_name}',
     dependencies=[Depends(bearer.has_access)],
@@ -124,3 +117,19 @@ def show_stream(user_name: str, session: Session = Depends(get_session)):
         streams.append(stream_info)
     
     return {'Status': 'Success', 'Response': streams}
+
+@router.post('/upload_stream',
+    dependencies=[Depends(bearer.has_access)],
+    tags=["Stream"],
+    include_in_schema=True,
+    description="Upload your stream",
+)
+async def upload_stream(upload_stream: UploadFile=File()):
+    upload_file_path = os.path.join('static/', upload_stream.filename)
+    async with aiofiles.open(upload_file_path, 'wb') as out_file:
+        content = await upload_stream.read(1024)
+        while content:  # async read chunk
+            await out_file.write(content)  # async write chunk
+            content = await upload_stream.read(1024)
+    
+    return {'Status': 'Success', 'Response': upload_stream.file}
