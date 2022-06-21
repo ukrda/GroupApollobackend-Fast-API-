@@ -132,4 +132,4 @@ async def upload_stream(upload_stream: UploadFile=File()):
             await out_file.write(content)  # async write chunk
             content = await upload_stream.read(1024)
     
-    return {'Status': 'Success', 'Response': upload_stream.file}
+    return {'Status': 'Success', 'Response': upload_stream.filename}

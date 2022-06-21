@@ -98,3 +98,23 @@ def start_group(user_name: str, GroupModel: GroupModel, session: Session = Depen
     except:
         return {'Status': 'Fail', 'Response': 'Failed to Create a Group Member'}
 
+@router.get('/show_groups',
+    dependencies=[Depends(bearer.has_access)],
+    tags=["Group"],
+    include_in_schema=True,
+    description="Show all the groups",
+)
+def show_groups(session: Session = Depends(get_session)):
+    query = select(Group)
+    query_groups = session.exec(query)
+
+    groups = []
+    for group in query_groups:
+        group_info = {}
+        group_info['name'] = group.g_name
+        group_info['motor'] = group.g_description
+        group_info['image_url'] = group.g_image_url
+
+        groups.append(group_info)
+    
+    return {'Status': 'Success', 'Response': groups}

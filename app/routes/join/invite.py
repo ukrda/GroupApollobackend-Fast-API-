@@ -73,7 +73,7 @@ def send_invite(group_name: str, manager_name: str, InvitationLogModel: Invitati
     except:
         return {'Status': 'Fail', 'Response': 'Fail to create an invitation'}
 
-@router.get('/check_invite/{group_name}/{user_name}',
+@router.get('/check_invite/{user_name}',
     dependencies=[Depends(bearer.has_access)],
     tags=["Join"],
     include_in_schema=True,
