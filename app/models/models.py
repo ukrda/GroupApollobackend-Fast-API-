@@ -89,7 +89,7 @@ class InvitationLog(SQLModel, table=True):
     i_id: Optional[int] = Field(default=None, primary_key=True)
     c_id: int # Invitee User ID
     i_note: Optional[str] = None
-    i_status: Optional[int] = 1 # 1- redirect to join, 2- decline, 3- do nothing
+    i_status: Optional[int] = 0 # 0- pending, 1- redirect to join, 2- decline, 3- do nothing
     i_log_timestamp: datetime.datetime = Field(default=datetime.datetime.utcnow())
     i_response_timestamp: datetime.datetime = Field(default=None)
 

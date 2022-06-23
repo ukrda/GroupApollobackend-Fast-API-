@@ -6,17 +6,12 @@ from sqlmodel import Session, select
 from pydantic import BaseModel
 import aiofiles
 
-from datetime import datetime
-
 from app.database.db import get_session, get_engine
 from app.models import models
 from app.security import bearer
 
-
-
 load_dotenv()
 salt = os.environ["Foreign_key_salt"]
-static_directory = os.environ['Static_file']
 
 router = fastapi.APIRouter()
 
@@ -98,7 +93,6 @@ def show_stream(user_name: str, session: Session = Depends(get_session)):
     streams = []
     for group_member in query_group_member:
         stream_info = {}
-        
         query = select(Group).where(
             Group.g_id == group_member.g_id
         )
@@ -107,14 +101,16 @@ def show_stream(user_name: str, session: Session = Depends(get_session)):
         query = select(Stream).where(
             Stream.gm_id == group_member.gm_id
         )
-        query_stream = session.exec(query).first()
+        query_stream = session.exec(query)
 
-        stream_info['group_name'] = query_group.g_name
-        stream_info['stream_title'] = query_stream.s_title
-        stream_info['stream_content_type'] = query_stream.s_content_type
-        stream_info['s_media_path'] = query_stream.s_media_path
+        if query_group is not None:
+            for stream in query_stream:
+                stream_info['group_name'] = query_group.g_name
+                stream_info['stream_title'] = stream.s_title
+                stream_info['stream_content_type'] = stream.s_content_type
+                stream_info['s_media_path'] = stream.s_media_path
 
-        streams.append(stream_info)
+                streams.append(stream_info)
     
     return {'Status': 'Success', 'Response': streams}
 

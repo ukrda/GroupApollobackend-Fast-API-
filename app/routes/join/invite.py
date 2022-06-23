@@ -89,7 +89,7 @@ def check_invite(user_name: str, session: Session = Depends(get_session)):
     # Check invitation
     query = select(InvitationLog).where(
         InvitationLog.c_id == query_user.u_id,
-        InvitationLog.i_status == 1
+        InvitationLog.i_status == 0
     )
     query_invitations = session.exec(query)
     invitations = []
