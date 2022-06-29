@@ -74,16 +74,3 @@ def sign_up_user(UserModel: UserModel, session: Session= Depends(get_session)):
     except:
         return {'Status': 'Fail', 'Response': 'Failed to sign up'}
 
-
-# @router.get("/add_user", dependencies=[Depends(bearer.has_access)], tags=["users"])
-# def create_user(Request: Request, session: Session = Depends(db.get_session)):
-#     foreign_key = uuid.uuid4()
-#     foreign_key_with_salt = str(foreign_key) + str(salt)
-#     hashed_key = hashlib.sha256(str(foreign_key_with_salt).encode("utf-8")).hexdigest()
-#     new_user = user(
-#         id=None, external_id=str(hashed_key)
-#     )
-#     session.add(new_user)
-#     session.commit()
-#     return foreign_key
-
