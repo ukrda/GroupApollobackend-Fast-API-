@@ -118,3 +118,40 @@ def show_groups(session: Session = Depends(get_session)):
         groups.append(group_info)
     
     return {'Status': 'Success', 'Response': groups}
+
+@router.get('/show_groups/{user_name}',
+    dependencies=[Depends(bearer.has_access)],
+    tags=["Group"],
+    include_in_schema=True,
+    description="Show all the groups",
+)
+def show_your_group(user_name: str, session: Session = Depends(get_session)):
+    # Get User ID
+    query = select(User).where(
+        User.u_name == user_name
+    )
+    query_user = session.exec(query).first()
+
+    # Get GroupMember ID
+    query = select(GroupMember).where(
+        GroupMember.u_id == query_user.u_id,
+        GroupMember.g_role == True
+    )
+    query_group_member = session.exec(query)
+
+    groups = []
+    for group_member in query_group_member:
+        query = select(Group).where(
+            Group.gm_id == group_member.gm_id
+        )
+        query_groups = session.exec(query)
+
+        for group in query_groups:
+            group_info = {}
+            group_info['name'] = group.g_name
+            group_info['motor'] = group.g_description
+            group_info['image_url'] = group.g_image_url
+
+            groups.append(group_info)
+        
+    return {'Status': 'Success', 'Response': groups}

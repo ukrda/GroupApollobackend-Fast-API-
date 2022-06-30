@@ -79,40 +79,46 @@ def start_stream(group_name: str, user_name: str, StreamModel: StreamModel, sess
     description="Show your stream",
 )
 def show_stream(user_name: str, session: Session = Depends(get_session)):
-    # Get User ID
-    query = select(User).where(
-        User.u_name == user_name
-    )
-    query_user = session.exec(query).first()
+    # # Get User ID
+    # query = select(User).where(
+    #     User.u_name == user_name
+    # )
+    # query_user = session.exec(query).first()
 
-    # Get Group Member
-    query = select(GroupMember).where(
-        GroupMember.u_id == query_user.u_id
+    # # Get Group Member
+    # query = select(GroupMember).where(
+    #     GroupMember.u_id == query_user.u_id
+    # )
+
+    query = select(User, GroupMember).join(GroupMember, isouter=True).where(
+        User.u_name == user_name,
+        User.u_id == GroupMember.u_id
     )
     query_group_member = session.exec(query)
     streams = []
     for group_member in query_group_member:
-        stream_info = {}
-        query = select(Group).where(
-            Group.g_id == group_member.g_id
-        )
-        query_group = session.exec(query).first()
+        print(group_member)
+    #     stream_info = {}
+    #     query = select(Group).where(
+    #         Group.g_id == group_member.g_id
+    #     )
+    #     query_group = session.exec(query).first()
 
-        query = select(Stream).where(
-            Stream.gm_id == group_member.gm_id
-        )
-        query_stream = session.exec(query)
+    #     query = select(Stream).where(
+    #         Stream.gm_id == group_member.gm_id
+    #     )
+    #     query_stream = session.exec(query)
 
-        if query_group is not None:
-            for stream in query_stream:
-                stream_info['group_name'] = query_group.g_name
-                stream_info['stream_title'] = stream.s_title
-                stream_info['stream_content_type'] = stream.s_content_type
-                stream_info['s_media_path'] = stream.s_media_path
+    #     if query_group is not None:
+    #         for stream in query_stream:
+    #             stream_info['group_name'] = query_group.g_name
+    #             stream_info['stream_title'] = stream.s_title
+    #             stream_info['stream_content_type'] = stream.s_content_type
+    #             stream_info['s_media_path'] = stream.s_media_path
 
-                streams.append(stream_info)
+    #             streams.append(stream_info)
     
-    return {'Status': 'Success', 'Response': streams}
+    # return {'Status': 'Success', 'Response': streams}
 
 @router.post('/upload_stream',
     dependencies=[Depends(bearer.has_access)],
