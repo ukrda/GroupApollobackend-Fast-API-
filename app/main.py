@@ -62,17 +62,22 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 @app.websocket("/ws/{client_id}")
-async def websocket_endpoint(websocket: WebSocket, client_id: str):
+async def websocket_endpoint(websocket: WebSocket, client_id: int):
+    print('###### Web Socket')
     await manager.connect(websocket)
     now = datetime.now()
     current_time = now.strftime("%H:%M")
     try:
         print('here!!!')
-        # while True:
-        #     data = await websocket.receive_text()
-        #     # await manager.send_personal_message(f"You wrote: {data}", websocket)
-        #     message = {"time":current_time,"clientId":client_id,"message":data}
-        #     await manager.broadcast(json.dumps(message))
+        while True:
+            print('receive text!!!')
+
+            data = await websocket.receive_text()
+            # await manager.send_personal_message(f"You wrote: {data}", websocket)
+
+            message = {"time":current_time,"clientId":client_id,"message":data}
+            print(message)
+            await manager.broadcast(json.dumps(message))
             
     except WebSocketDisconnect:
         manager.disconnect(websocket)
