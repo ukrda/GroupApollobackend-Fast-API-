@@ -15,6 +15,10 @@ pytest
 requests
 pandas
 openpyxl
+cryptography==2.8
 python-jose[cryptography]
 passlib[bcrypt]
 websockets
+pyjwt==1.7.1
+passlib==1.7.2
+bcrypt==3.2.0
