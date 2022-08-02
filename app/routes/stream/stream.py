@@ -2,12 +2,16 @@ import os
 import fastapi
 from fastapi import Depends, UploadFile, File
 from dotenv import load_dotenv
-from sqlmodel import Session, select
+from sqlmodel import Session, select, text
 from pydantic import BaseModel
 import aiofiles
+from typing import Union
+
+import datetime
 
 from app.database.db import get_session, get_engine
-from app.models import models
+from app.models.models import User, Group, GroupMember, Stream
+from app.models.basemodels import UserModel, StreamModel
 from app.security import bearer
 
 load_dotenv()
@@ -17,23 +21,13 @@ router = fastapi.APIRouter()
 
 engine = get_engine()
 
-User = models.User
-GroupMember = models.GroupMember
-Group = models.Group
-Stream = models.Stream
-
-class StreamModel(BaseModel):
-    s_content_type: int
-    s_title: str
-    s_media_path: str
-
-@router.post('/start_stream/{group_name}/{user_name}',
-    dependencies=[Depends(bearer.has_access)],
+@router.post('/start_stream/{group_name}',
+    dependencies=[Depends(bearer.get_current_active_user)],
     tags=["Stream"],
     include_in_schema=True,
     description="Post your stream",
 )
-def start_stream(group_name: str, user_name: str, StreamModel: StreamModel, session: Session = Depends(get_session)):
+def start_stream(group_name: str, StreamModel: StreamModel, current_user: UserModel = Depends(bearer.get_current_active_user), session: Session = Depends(get_session)):
     # Get GroupMember ID and Group ID & User ID
     query = select(Group).where(
         Group.g_name == group_name
@@ -42,16 +36,16 @@ def start_stream(group_name: str, user_name: str, StreamModel: StreamModel, sess
     if query_group is None:
         return {'Status': 'Success', 'Response': 'No such a group'}
 
-    query = select(User).where(
-        User.u_name == user_name
-    )
-    query_user = session.exec(query).first()
-    if query_user is None:
-        return {'Status': 'Success', 'Response': 'No such a user'}
+    # query = select(User).where(
+    #     User.u_name == current_user.u_name
+    # )
+    # query_user = session.exec(query).first()
+    # if query_user is None:
+    #     return {'Status': 'Success', 'Response': 'No such a user'}
 
     query = select(GroupMember).where(
         GroupMember.g_id == query_group.g_id,
-        GroupMember.u_id == query_user.u_id
+        GroupMember.u_id == current_user.u_id
     )
     query_group_member = session.exec(query).first()
     if query_group_member is None:
@@ -72,13 +66,30 @@ def start_stream(group_name: str, user_name: str, StreamModel: StreamModel, sess
     except:
         return {'Status': 'Fail', 'Response': 'Failed to Create a Stream'}
 
-@router.get('/show_stream/{user_name}',
-    dependencies=[Depends(bearer.has_access)],
+def query_show_option(options: str) -> str:
+    number_of_options = len(options)
+    query = ''
+    for index in range(number_of_options):
+        if options[index] == '1':
+            query += 'Stream.s_content_type = 1 OR '
+        elif options[index] == '2':
+            query += 'Stream.s_content_type = 2 OR '
+        elif options[index] == '3':
+            query += 'Stream.s_content_type = 3 OR '
+        elif options[index] == '4':
+            query += 'Stream.s_content_type = 4 OR '
+        elif options[index] == '5':
+            query += 'Stream.s_content_type = 5'
+    
+    return query
+
+@router.get('/show_stream/{view_mode}/{show_options}',
+    dependencies=[Depends(bearer.get_current_active_user)],
     tags=["Stream"],
     include_in_schema=True,
     description="Show your stream",
 )
-def show_stream(user_name: str, session: Session = Depends(get_session)):
+def show_stream(view_mode: Union[int, None] = None, show_options: Union[str, None] = '12345',  current_user: UserModel = Depends(bearer.get_current_active_user), session: Session = Depends(get_session)):
     # # Get User ID
     # query = select(User).where(
     #     User.u_name == user_name
@@ -90,24 +101,36 @@ def show_stream(user_name: str, session: Session = Depends(get_session)):
     #     GroupMember.u_id == query_user.u_id
     # )
 
-    query = select(User, GroupMember).where(
-        User.u_name == user_name,
-        User.u_id == GroupMember.u_id
+    # query = select(User, GroupMember).where(
+    #     User.u_name == current_user.u_name,
+    #     User.u_id == GroupMember.u_id
+    # )
+
+    query = select(Group).where(
+        GroupMember.u_id == current_user.u_id
     )
-    query_group_member = session.exec(query)
+    query_group_member = session.exec(query).all()
     streams = []
     for group_member in query_group_member:
-        print(group_member.GroupMember)
         stream_info = {}
         query = select(Group).where(
-            Group.g_id == group_member.GroupMember.g_id
+            Group.g_id == group_member.g_id
         )
         query_group = session.exec(query).first()
 
-        query = select(Stream).where(
-            Stream.gm_id == group_member.GroupMember.gm_id
-        )
-        query_stream = session.exec(query)
+        # query = select(Stream).where(
+        #     Stream.gm_id == group_member.gm_id
+        # )
+        # query_stream = session.exec(query).all()
+
+        
+        # query = ''
+        query = query_show_option(show_options)
+        if query == '':
+            query = 'Stream.gm_id = ' + str(group_member.gm_id)
+        else:
+            query = 'Stream.gm_id = ' + str(group_member.gm_id) + ' AND ' + query
+        query_stream = session.query(Stream).filter(text(query))
 
         if query_group is not None:
             for stream in query_stream:
@@ -115,13 +138,14 @@ def show_stream(user_name: str, session: Session = Depends(get_session)):
                 stream_info['stream_title'] = stream.s_title
                 stream_info['stream_content_type'] = stream.s_content_type
                 stream_info['s_media_path'] = stream.s_media_path
+                stream_info['posted_time_ago'] = datetime.datetime.now() - stream.s_created_timestamp
 
                 streams.append(stream_info)
     
     return {'Status': 'Success', 'Response': streams}
 
 @router.post('/upload_stream',
-    dependencies=[Depends(bearer.has_access)],
+    dependencies=[Depends(bearer.get_current_active_user)],
     tags=["Stream"],
     include_in_schema=True,
     description="Upload your stream",

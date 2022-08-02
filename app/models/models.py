@@ -1,7 +1,7 @@
 from typing import Optional
 import datetime
-from sqlalchemy import false
-
+from sqlalchemy import false, Column
+from sqlalchemy.dialects.postgresql import TEXT, VARCHAR
 from sqlmodel import Field, SQLModel, UniqueConstraint, Relationship
 
 
@@ -35,8 +35,8 @@ class Group(SQLModel, table=True):
     """
     __table_args__ = (UniqueConstraint('g_id'),)
     g_id: Optional[int] = Field(default=None, primary_key=True)
-    g_name: str
-    g_motor: str
+    g_name: str = Field(sa_column=Column(VARCHAR(100), default='123'))
+    g_motor: str = Field(sa_column=Column(VARCHAR(600)))
     g_description: Optional[str] = None
     g_image_url: str
     g_content_type: str

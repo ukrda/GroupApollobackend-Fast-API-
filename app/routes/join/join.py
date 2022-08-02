@@ -22,19 +22,18 @@ Group = models.Group
 Join = models.Join
 
 class JoinModel(BaseModel):
-    u_id: int
-    gm_id: int
-    join_status: int
+    user_name: str
+    group_name: str
 
-@router.post('/send_join/{group_name}/{user_name}',
-    dependencies=[Depends(bearer.has_access)],
+@router.post('/send_join',
+    dependencies=[Depends(bearer.get_current_active_user)],
     tags=["Join"],
     include_in_schema=True,
     description="Send a request to join",
 )
-def send_join(group_name: str, user_name: str, session: Session = Depends(get_session)):
+def send_join(join: JoinModel, session: Session = Depends(get_session)):
     query = select(Group).where(
-        Group.g_name == group_name
+        Group.g_name == join.group_name
     )
     query_group = session.exec(query).first()
 
@@ -45,7 +44,7 @@ def send_join(group_name: str, user_name: str, session: Session = Depends(get_se
     query_group_member = session.exec(query).first()
 
     query = select(User).where(
-        User.u_name == user_name
+        User.u_name == join.user_name
     )
     query_user = session.exec(query).first()
 
@@ -64,7 +63,7 @@ def send_join(group_name: str, user_name: str, session: Session = Depends(get_se
         return {'Status': 'Fail', 'Response': 'Failed to send a join request'}
 
 @router.get('/check_join/{group_name}',
-    dependencies=[Depends(bearer.has_access)],
+    dependencies=[Depends(bearer.get_current_active_user)],
     tags=["Join"],
     include_in_schema=True,
     description="Check the join requests on the Group Manager side",
@@ -103,7 +102,7 @@ def check_join(group_name: str, session: Session = Depends(get_session)):
     return {'Status': 'Success', 'Response': joins}
 
 @router.post('/accept_join/{group_name}/{user_name}',
-    dependencies=[Depends(bearer.has_access)],
+    dependencies=[Depends(bearer.get_current_active_user)],
     tags=["Join"],
     include_in_schema=True,
     description="Decide whether join request is accepted or declined on the Group Manager side",

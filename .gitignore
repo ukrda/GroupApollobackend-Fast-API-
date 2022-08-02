@@ -154,3 +154,4 @@ cython_debug/
 .vscode
 *$api.xlsx
 *.zip
+*.png

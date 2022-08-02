@@ -27,7 +27,7 @@ class InvitationLogModel(BaseModel):
     i_status: int
 
 @router.post('/send_invite/{group_name}/{manager_name}',
-    dependencies=[Depends(bearer.has_access)],
+    dependencies=[Depends(bearer.get_current_active_user)],
     tags=["Join"],
     include_in_schema=True,
     description="Send an invitation to join",
@@ -74,7 +74,7 @@ def send_invite(group_name: str, manager_name: str, InvitationLogModel: Invitati
         return {'Status': 'Fail', 'Response': 'Fail to create an invitation'}
 
 @router.get('/check_invite/{user_name}',
-    dependencies=[Depends(bearer.has_access)],
+    dependencies=[Depends(bearer.get_current_active_user)],
     tags=["Join"],
     include_in_schema=True,
     description="Check the invitation on the User Member side",

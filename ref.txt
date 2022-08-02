@@ -15,3 +15,9 @@ https://stackoverflow.com/questions/63580229/how-to-save-uploadfile-in-fastapi
 - Download
 https://stackoverflow.com/questions/55873174/how-do-i-return-an-image-in-fastapi
 https://stackoverflow.com/questions/60716529/download-file-using-fastapi
+
+///// Fastapi db schema - type
+https://stackoverflow.com/questions/70208393/how-to-create-postgresql-text-column-using-sqlmodel-for-fastapi
+
+///// Fastapi - 3rd party api
+https://www.python-httpx.org/api/

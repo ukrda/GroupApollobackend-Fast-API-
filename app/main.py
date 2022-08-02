@@ -16,6 +16,7 @@ from app.routes import users
 from app.routes.group import group
 from app.routes.stream import stream
 from app.routes.join import invite, join
+from app.routes.find import find_group
 
 load_dotenv()
 
@@ -25,6 +26,8 @@ app.include_router(group.router)
 app.include_router(stream.router)
 app.include_router(invite.router)
 app.include_router(join.router)
+app.include_router(find_group.router)
+
 
 
 app.add_middleware(
@@ -91,4 +94,4 @@ def on_startup():
 
 
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", port=8001, reload=False, debug=True, access_log=False)
+    uvicorn.run("app.main:app", port=8002, reload=False, debug=True, access_log=False)
