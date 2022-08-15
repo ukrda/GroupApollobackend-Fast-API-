@@ -1,5 +1,4 @@
 import os
-from turtle import st
 import fastapi
 from fastapi import Depends, Request
 from fastapi.responses import RedirectResponse

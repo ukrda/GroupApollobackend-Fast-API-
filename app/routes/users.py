@@ -108,7 +108,7 @@ async def get_allombo_token(token: TokenModel, session: Session= Depends(get_ses
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password",
+                detail=token_response.json(),
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
