@@ -94,4 +94,4 @@ def on_startup():
 
 
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", port=8080, reload=False, debug=True, access_log=False)
+    uvicorn.run("app.main:app", port=8001, reload=False, debug=True, access_log=False)

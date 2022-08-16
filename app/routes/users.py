@@ -71,6 +71,9 @@ async def get_allombo_token(token: TokenModel, session: Session= Depends(get_ses
             'code': token.code,
             'code_verifier': token.code_verifier
         }
+        print('code --> ', token.code)
+        print('code_verifier --> ', token.code_verifier)
+
         token_response = await client.post(redirect_uri, headers=token_header, data=data)
         print('here =====> ', token_response.status_code)
         print('here =====> ', token_response.json())
