@@ -74,22 +74,22 @@ async def get_allombo_token(token: TokenModel, session: Session= Depends(get_ses
         print('code --> ', token.code)
         print('code_verifier --> ', token.code_verifier)
 
-        token_response = await client.post(redirect_uri, headers=token_header, data=data)
+        token_response = await client.post(redirect_uri, data=data)
         print('here =====> ', token_response.status_code)
-        print('here =====> ', token_response.json())
+        print('token_response =====> ', token_response)
 
         
-        if token_response.status_code == 200 and token_response.access_token != None:
+        if token_response.status_code == 200 and token_response.json()['access_token'] != None:
             profile_header = {
                 'Content-type': 'application/json',
-                'Authorization': 'Bearer ' + token_response.access_token
+                'Authorization': 'Bearer ' + token_response.json()['access_token']
             }
             profile_response = await client.get(profile_uri, headers=profile_header)
             print(profile_response.json())
 
             # Should check the profile response json data
-            allombo_user_name = profile_response.json()['username']
-            allombo_user_email = profile_response.json()['useremail']
+            allombo_user_name = profile_response.json()['name']
+            allombo_user_email = profile_response.json()['email']
 
             group_user = get_user(allombo_user_name)
             if group_user is None:
