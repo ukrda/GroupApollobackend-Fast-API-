@@ -124,7 +124,7 @@ async def get_allombo_token(token: TokenModel, session: Session= Depends(get_ses
 )
 def sign_up_user(userModel: UserModel, session: Session= Depends(get_session)):
 
-    query_result = session.query(User).filter(User.u_name == userModel.u_name).first()
+    query_result = session.query(User).filter(User.u_email == userModel.u_email).first()
 
     if query_result is not None:
         return {'Status': 'Success', 'Response': 'Already Exists'}
