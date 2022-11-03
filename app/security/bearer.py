@@ -43,7 +43,7 @@ def get_password_hash(password):
 def get_user(u_name: str):
     with Session(engine) as session:
         # user = session.query(User).filter(User.u_name == u_name).first()
-        user = session.query(User).filter(User.u_email == u_name).first()
+        user = session.query(User).filter(User.u_name == u_name).first()
         return user
 
 
