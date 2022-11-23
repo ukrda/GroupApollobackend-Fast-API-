@@ -14,6 +14,7 @@ class User(SQLModel, table=True):
     u_name: str
     u_email: str
     u_password: str
+    u_reset_token: Optional[str] = Field(default=None)
     u_created_timestamp: datetime.datetime = Field(default=datetime.datetime.utcnow())
     u_removed_timestamp: datetime.datetime = Field(default=None)
 

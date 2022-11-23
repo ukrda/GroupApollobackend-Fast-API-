@@ -5,6 +5,10 @@ class UserModel(BaseModel):
     u_name: str
     u_password: str
     u_email: str
+
+class ResetPasswordModel(BaseModel):
+    u_password: str
+    token: str
     
 class TokenModel(BaseModel):
     code: str
