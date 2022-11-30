@@ -19,21 +19,15 @@ router = fastapi.APIRouter()
 
 engine = get_engine()
 
+
 @router.post('/start_group',
-    dependencies=[Depends(bearer.get_current_active_user)],
-    tags=["Group"],
-    include_in_schema=True,
-    description="Start your group and Create a group member",
-)
+             dependencies=[Depends(bearer.get_current_active_user)],
+             tags=["Group"],
+             include_in_schema=True,
+             description="Start your group and Create a group member",
+             )
 def start_group(GroupModel: GroupModel, current_user: UserModel = Depends(bearer.get_current_active_user), session: Session = Depends(get_session)):
-    # Get User ID
-    # query = select(User).where(
-    #     User.u_name == current_user.u_name
-    # )
-    # query_user = session.exec(query).first()
-    # if query_user is None:
-    #     return {'Status': 'Success', 'Response': 'Sign Up First'}
-    
+    print("Groupmodel = ", GroupModel)
     # Check whether Group is existance or not
     query = select(Group).where(
         Group.g_name == GroupModel.g_name
@@ -45,15 +39,15 @@ def start_group(GroupModel: GroupModel, current_user: UserModel = Depends(bearer
     # Create a Group
     try:
         new_group = Group(
-            g_name = GroupModel.g_name,
-            g_motor = GroupModel.g_motor,
-            g_description = GroupModel.g_description,
-            g_image_url = GroupModel.g_image_url,
-            g_content_type = GroupModel.g_content_type,
-            g_member_type = GroupModel.g_member_type,
-            g_allow_gender = GroupModel.g_allow_gender,
-            g_limit_member = GroupModel.g_limit_member,
-            g_invite_option = GroupModel.g_invite_option
+            g_name=GroupModel.g_name,
+            g_motor=GroupModel.g_motor,
+            g_description=GroupModel.g_description,
+            g_image_url=GroupModel.g_image_url,
+            g_content_type=GroupModel.g_content_type,
+            g_member_type=GroupModel.g_member_type,
+            g_allow_gender=GroupModel.g_allow_gender,
+            g_limit_member=GroupModel.g_limit_member,
+            g_invite_option=GroupModel.g_invite_option
         )
         session.add(new_group)
         session.commit()
@@ -63,8 +57,8 @@ def start_group(GroupModel: GroupModel, current_user: UserModel = Depends(bearer
     # Create a GroupMember
     try:
         new_group_member = GroupMember(
-            g_id = new_group.g_id,
-            u_id = current_user.u_id
+            g_id=new_group.g_id,
+            u_id=current_user.u_id
         )
         session.add(new_group_member)
         session.commit()
@@ -79,13 +73,14 @@ def start_group(GroupModel: GroupModel, current_user: UserModel = Depends(bearer
     except:
         return {'Status': 'Fail', 'Response': 'Failed to Create a Group Member'}
 
+
 @router.get('/show_groups',
-    dependencies=[Depends(bearer.get_current_active_user)],
-    tags=["Group"],
-    include_in_schema=True,
-    description="Show all the groups",
-)
-def show_groups( current_user: UserModel = Depends(bearer.get_current_active_user), session: Session = Depends(get_session)):
+            dependencies=[Depends(bearer.get_current_active_user)],
+            tags=["Group"],
+            include_in_schema=True,
+            description="Show all the groups",
+            )
+def show_groups(current_user: UserModel = Depends(bearer.get_current_active_user), session: Session = Depends(get_session)):
     # Get GroupMember ID
     query = select(GroupMember).where(
         GroupMember.u_id != current_user.u_id,
@@ -105,34 +100,27 @@ def show_groups( current_user: UserModel = Depends(bearer.get_current_active_use
             group_info['name'] = group.g_name
             group_info['motor'] = group.g_description
             group_info['image_url'] = group.g_image_url
-
+            group_info['is_invite_only'] = group.g_invite_option
+            group_info['is_group_owner'] = group_member.g_role
             groups.append(group_info)
-    
-    # Select random number of items in groups
-    # print('######### ', random.sample(groups, 2))
+
     if len(groups) == 0:
         return {'Status': 'Success', 'Response': groups}
     else:
-        return {'Status': 'Success', 'Response': groups} # random.choice(groups)}
+        return {'Status': 'Success', 'Response': groups}
+
 
 @router.get('/show_own_groups',
-    dependencies=[Depends(bearer.get_current_active_user)],
-    tags=["Group"],
-    include_in_schema=True,
-    description="Show your own groups",
-)
+            dependencies=[Depends(bearer.get_current_active_user)],
+            tags=["Group"],
+            include_in_schema=True,
+            description="Show your own groups",
+            )
 def show_own_group(request: Request, current_user: UserModel = Depends(bearer.get_current_active_user), session: Session = Depends(get_session)):
-    # Get User ID
-    # query = select(User).where(
-    #     User.u_name == current_user.u_name
-    # )
-    # query_user = session.exec(query).first()
 
     # Get GroupMember ID
     query = select(GroupMember).where(
-        # GroupMember.u_id == query_user.u_id,
         GroupMember.u_id == current_user.u_id,
-        GroupMember.g_role == True
     )
     query_group_member = session.exec(query).all()
 
@@ -153,10 +141,12 @@ def show_own_group(request: Request, current_user: UserModel = Depends(bearer.ge
             group_info['name'] = group.g_name
             group_info['motor'] = group.g_description
             group_info['image_url'] = group.g_image_url
-
+            group_info['is_invite_only'] = group.g_invite_option
+            group_info['is_group_owner'] = group_member.g_role
             groups.append(group_info)
-        
+
     return {'Status': 'Success', 'Response': groups}
+
 
 def get_sort_by_query(sort_by, u_id):
     if sort_by == 1:
@@ -165,27 +155,46 @@ def get_sort_by_query(sort_by, u_id):
         query = ''
 
 
-@router.get('/show_member_groups/{sort_by}/{show_options}',
-    dependencies=[Depends(bearer.get_current_active_user)],
-    tags=["Group"],
-    include_in_schema=True,
-    description="Show your member groups",
-)
-def show_member_group(sort_by: int, show_options: str, current_user: UserModel = Depends(bearer.get_current_active_user), session: Session = Depends(get_session)):
+# @router.get('/show_member_groups/{sort_by}/{show_options}',
+@router.get('/show_member_groups',
+            dependencies=[Depends(bearer.get_current_active_user)],
+            tags=["Group"],
+            include_in_schema=True,
+            description="Show your member groups",
+            )
+# def show_member_group(sort_by: int, show_options: str, current_user: UserModel = Depends(bearer.get_current_active_user), session: Session = Depends(get_session)):
+def show_member_group(current_user: UserModel = Depends(bearer.get_current_active_user), session: Session = Depends(get_session)):
     query_member_group = select(GroupMember).where(
         GroupMember.u_id == current_user.u_id
     )
-    member_group = session.exec(query_member_group).all()
+    query_group = session.exec(query_member_group).all()
 
-    return member_group
-    # query_sorty_by = get_sort_by_query(sort_by, current_user.u_id)
+    print("---------------", query_group)
+
+    groups = []
+    for group_member in query_group:
+        query = select(Group).where(
+            Group.g_id == group_member.g_id
+        )
+        query_groups = session.exec(query).all()
+
+        for group in query_groups:
+            group_info = {}
+            group_info['name'] = group.g_name
+            group_info['motor'] = group.g_description
+            group_info['image_url'] = group.g_image_url
+            group_info['is_invite_only'] = group.g_invite_option
+            group_info['is_group_owner'] = group_member.g_role
+            groups.append(group_info)
+
+    return {'Status': 'Success', 'Response': groups}
 
 @router.get('/show_specific_group/{group_name}',
-    dependencies=[Depends(bearer.get_current_active_user)],
-    tags=["Group"],
-    include_in_schema=True,
-    description="Show your specific group info",
-)
+            dependencies=[Depends(bearer.get_current_active_user)],
+            tags=["Group"],
+            include_in_schema=True,
+            description="Show your specific group info",
+            )
 def show_specific_group(group_name: str, current_user: UserModel = Depends(bearer.get_current_active_user), session: Session = Depends(get_session)):
     query_group_info = select(Group).where(
         Group.g_name == group_name
