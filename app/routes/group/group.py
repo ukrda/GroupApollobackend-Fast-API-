@@ -102,6 +102,7 @@ def show_groups(current_user: UserModel = Depends(bearer.get_current_active_user
             group_info['image_url'] = group.g_image_url
             group_info['is_invite_only'] = group.g_invite_option
             group_info['is_group_owner'] = group_member.g_role
+            group_info['group_status'] = group.g_status
             groups.append(group_info)
 
     if len(groups) == 0:
